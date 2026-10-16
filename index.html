@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Odlesk — studio zážitků · Liberec</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<meta name="description" content="Ukázka stránky studia zážitků: skleněný hranol láme nápis, projekty se střídají rozpadem na pixely. Smyšlená značka; Vladislav Zachariev, Whyte Lynx.">
-<meta name="theme-color" content="#04050b">
+<meta name="description" content="Ukázka stránky studia zážitků: skleněná čočka láme nápis v místnosti ze svítících panelů, projekty běží dokola na zakřivených plátnech. Smyšlená značka; Vladislav Zachariev, Whyte Lynx.">
+<meta name="theme-color" content="#0b0b10">
 <meta name="robots" content="noindex">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Odlesk — ukázka stránky od Whyte Lynx">
-<meta property="og:description" content="Skleněný hranol, který láme nápis, a projekty, které se střídají rozpadem na pixely. Smyšlená značka, ukázka práce Whyte Lynx.">
+<meta property="og:description" content="Skleněná čočka, která láme nápis, místnost ze svítících panelů a projekty na zakřivených plátnech. Smyšlená značka, ukázka práce Whyte Lynx.">
 <meta property="og:image" content="https://vladislavzachariev-oss.github.io/odlesk/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -18,80 +18,203 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
-<link rel="preload" as="image" href="img/hala.webp">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&family=Unbounded:wght@700;800&display=swap" rel="stylesheet">
+<link rel="modulepreload" href="vendor/three.module.min.js">
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="is-loading">
 
-<header class="hd" id="hd">
-  <a class="logo" href="#top" data-go="0" aria-label="Odlesk, na začátek">ODLESK</a>
-  <nav class="hd__nav" aria-label="Hlavní">
-    <a href="#projekty" data-go="1">Projekty</a>
-    <a href="#studio">Studio</a>
-    <a href="#kontakt">Kontakt</a>
-  </nav>
-  <div class="hd__right">
-    <span class="clock" id="clock" aria-hidden="true">LBC --:--:--</span>
-    <a class="btn" href="#kontakt">Napište nám <span aria-hidden="true">↗</span></a>
-  </div>
-</header>
+<div class="loader" id="loader" aria-hidden="true">
+  <svg class="loader__ring" viewBox="0 0 120 120"><circle class="loader__track" cx="60" cy="60" r="44"/><circle class="loader__draw" id="ldDraw" cx="60" cy="60" r="44" pathLength="100"/></svg>
+  <p class="loader__txt mono"><span>ODLESK</span><span><b id="ldPct">00</b> %</span></p>
+</div>
 
 <canvas id="gl" aria-hidden="true"></canvas>
 <div class="fallback" aria-hidden="true"></div>
 
-<main id="top">
-  <div class="track" id="track">
-    <div class="stage" id="stage" data-scene="0">
-      <h1 class="sr">Odlesk, studio zážitků v Liberci</h1>
+<header class="hd" id="hd">
+  <a class="logo" href="#uvod" aria-label="Odlesk, na začátek">
+    <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="13.5" fill="none" stroke="currentColor" stroke-width="7"/></svg>
+    <span>ODLESK</span>
+  </a>
+  <nav class="hd__nav mono" aria-label="Hlavní">
+    <a href="#projekty">Projekty</a>
+    <a href="#studio">Studio</a>
+    <a href="#vize">Vize</a>
+    <a href="#sluzby">Služby</a>
+  </nav>
+  <div class="hd__right">
+    <a class="pill mono" href="#kontakt">Kontakt / Spolupráce</a>
+    <button class="burger" id="burger" type="button" aria-label="Otevřít menu" aria-expanded="false" aria-controls="menu"><i></i><i></i><i></i></button>
+  </div>
+</header>
 
-      <div class="intro">
-        <p class="mono">Studio zážitků · Liberec</p>
-        <p class="intro__lead">Výstavy, světelné instalace a&nbsp;interaktivní prostory.</p>
+<aside class="ruler mono" id="ruler" aria-hidden="true"><div class="ruler__ticks" id="ticks"></div><p class="ruler__now" id="rulerNow"><i></i><span>ÚVOD</span></p></aside>
+
+<div class="hud" id="hud" aria-hidden="true">
+  <div class="quat mono">
+    <p class="quat__hd">Čočka · kvaternion <i>::</i></p>
+    <p class="quat__v"><i class="quat__dot"></i><span id="qx">.00</span><span id="qy">.00</span><span id="qz">.00</span><span id="qw">1.0</span></p>
+  </div>
+  <canvas class="gizmo" id="gizmo" width="192" height="192" title="Tažením otočíte čočkou"></canvas>
+  <button class="qreset mono" id="qReset" type="button" tabindex="-1">Srovnat čočku</button>
+</div>
+
+<div class="pane mono" id="pane">
+  <button class="pane__hd" id="paneHd" type="button" aria-expanded="false" aria-controls="paneBody">Materiál čočky <i>::</i></button>
+  <div class="pane__body" id="paneBody">
+    <label class="row"><span>drsnost</span><input type="range" min="0" max="0.6" step="0.01" value="0.08" data-k="roughness"><output>0.08</output></label>
+    <label class="row"><span>lom</span><input type="range" min="1" max="2.3" step="0.01" value="1.5" data-k="ior"><output>1.50</output></label>
+    <label class="row"><span>rozptyl</span><input type="range" min="0" max="10" step="0.1" value="4" data-k="dispersion"><output>4.0</output></label>
+    <label class="row"><span>zrnitost</span><input type="range" min="0" max="1" step="0.01" value="0.25" data-k="grain"><output>0.25</output></label>
+    <label class="row"><span>tloušťka</span><input type="range" min="0.2" max="3" step="0.05" value="1.4" data-k="thickness"><output>1.40</output></label>
+    <div class="row row--sw"><span>barva</span><div class="sw" id="sw">
+      <button type="button" style="--c:#ffffff" data-c="#ffffff" aria-label="Čirá"></button>
+      <button type="button" style="--c:#b9a6ff" data-c="#b9a6ff" aria-label="Fialová" class="on"></button>
+      <button type="button" style="--c:#8fb4ff" data-c="#8fb4ff" aria-label="Modrá"></button>
+      <button type="button" style="--c:#ffc98a" data-c="#ffc98a" aria-label="Jantarová"></button>
+    </div></div>
+  </div>
+</div>
+
+<main>
+  <div class="scena" id="scena">
+    <section class="hero" id="uvod" data-name="Úvod" aria-labelledby="h1">
+      <h1 class="sr" id="h1">Odlesk, studio zážitků v Liberci: výstavy, světelné instalace a interaktivní prostory</h1>
+      <p class="hero__lead mono">Studio zážitků · Liberec<br><span>Výstavy, světlo a&nbsp;interaktivní prostory</span></p>
+      <div class="news">
+        <p class="news__hd mono">Novinky</p>
+        <ul>
+          <li><time class="mono">2026.10</time><p>Dílna v Liberci je otevřená pro školy. Ukážeme, jak se staví světlo.</p></li>
+          <li><time class="mono">2026.09</time><p>Nový projekt Síť: paprsky v mlze v bývalé kotelně.</p></li>
+          <li><time class="mono">2026.06</time><p>Hledáme technika pro světlo a zvuk.</p></li>
+        </ul>
       </div>
       <p class="hint mono" aria-hidden="true">Rolujte <i></i></p>
+      <span class="plus" style="left:14%;top:24%"></span><span class="plus" style="left:83%;top:66%"></span><span class="plus" style="left:36%;top:81%"></span><span class="plus" style="left:61%;top:17%"></span>
+    </section>
 
-      <article class="work" id="projekty" aria-live="polite">
-        <p class="work__meta mono"><span class="tag tag--hi" id="wDate">2026.03</span><span id="wKind">Imerzivní projekce</span></p>
-        <h2 class="work__title" id="wTitle">Hlubina</h2>
-        <p class="work__text" id="wText"></p>
-        <ul class="work__tags mono" id="wTags"></ul>
-      </article>
-
-      <div class="count mono" aria-hidden="true"><span><b id="cNow">01</b> / 04</span><i><i id="cBar"></i></i></div>
-    </div>
+    <section class="works" id="projekty" data-name="Projekty" aria-labelledby="wkT">
+      <h2 class="sr" id="wkT">Projekty</h2>
+      <div class="works__stick" id="wkStick">
+        <article class="wk" aria-live="polite">
+          <p class="wk__meta mono"><span id="wDate">2026.03</span><mark id="wHi">1 200 m² projekce</mark></p>
+          <h3 class="wk__title" id="wTitle">Hlubina</h3>
+          <p class="wk__sub" id="wSub">Imerzivní projekce · výstavní hala</p>
+          <ul class="wk__tags mono" id="wTags"></ul>
+        </article>
+        <div class="wk__side mono">
+          <p class="wk__count"><b id="wNow">01</b> / 06</p>
+          <i class="wk__bar"><i id="wBar"></i></i>
+          <a class="wk__more" href="#kontakt">Chci podobný projekt <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+      <ol class="sr" id="wkList"></ol>
+    </section>
   </div>
 
-  <section class="studio" id="studio" aria-labelledby="studioT">
-    <h2 class="sr" id="studioT">Studio</h2>
-    <p class="say" id="say">
-      <span class="hl"><span>Vymýšlíme a stavíme výstavy,</span></span>
-      <span class="hl"><span>světelné instalace a prostory,</span></span>
-      <span class="hl"><span>do kterých se vstupuje.</span></span>
-    </p>
-    <p class="studio__lead">Od nápadu po poslední kabel. Projekce, světlo, zvuk i&nbsp;senzory děláme sami, ve vlastní dílně v&nbsp;Liberci.</p>
-    <div class="cols">
-      <div><p class="mono">Výstavy</p><p>Projekce přes stěny i podlahu, zvuk do prostoru. Pro galerie, muzea a haly.</p></div>
-      <div><p class="mono">Světlo</p><p>Venkovní objekty pro festivaly a města, které vydrží déšť i mráz.</p></div>
-      <div><p class="mono">Interakce</p><p>Podlahy a stěny, které reagují na pohyb. Pro děti, veletrhy a firemní akce.</p></div>
+  <section class="light studio" id="studio" data-name="Studio" aria-labelledby="stT">
+    <svg class="wire" id="wire1" viewBox="0 0 600 600" aria-hidden="true">
+      <ellipse cx="300" cy="300" rx="250" ry="250" pathLength="100"/>
+      <ellipse cx="300" cy="300" rx="150" ry="150" pathLength="100"/>
+      <ellipse cx="300" cy="300" rx="250" ry="250" pathLength="100" transform="translate(28 18)"/>
+      <ellipse cx="300" cy="300" rx="150" ry="150" pathLength="100" transform="translate(28 18)"/>
+    </svg>
+    <div class="light__in">
+      <p class="lbl mono">Studio</p>
+      <h2 class="blk rv" id="stT"><span>Stavíme prostory,</span><span>do kterých se vstupuje</span></h2>
+      <p class="sub rv">Výstavy, světlo a interakce. Od nápadu po poslední kabel, všechno ve vlastní dílně v&nbsp;Liberci.</p>
+      <div class="cols rv">
+        <div><p class="mono">01 · Výstavy</p><p>Projekce přes stěny i podlahu, zvuk do prostoru. Pro galerie, muzea a haly.</p></div>
+        <div><p class="mono">02 · Světlo</p><p>Venkovní objekty pro festivaly a města. Vydrží déšť i mráz a zapnou se samy.</p></div>
+        <div><p class="mono">03 · Interakce</p><p>Podlahy a stěny, které poznají krok i dotek. Pro děti, veletrhy a firemní akce.</p></div>
+      </div>
     </div>
   </section>
 
-  <section class="contact" id="kontakt" aria-labelledby="kontaktT">
-    <h2 class="contact__big" id="kontaktT">Máte prostor,<br>který má ožít?</h2>
-    <button class="btn btn--big" type="button" id="write">Napište nám <span aria-hidden="true">↗</span></button>
+  <section class="light vize" id="vize" data-name="Vize" aria-labelledby="vzT">
+    <p class="vize__word" aria-hidden="true">VIZE</p>
+    <svg class="vize__ring" id="wire2" viewBox="0 0 600 600" aria-hidden="true">
+      <defs><linearGradient id="iri" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7cf7ff"/><stop offset=".3" stop-color="#b6ff6a"/><stop offset=".55" stop-color="#ffe45c"/><stop offset=".8" stop-color="#ff7ad9"/><stop offset="1" stop-color="#8a7bff"/></linearGradient></defs>
+      <circle class="vr-out" cx="300" cy="300" r="240" pathLength="100"/>
+      <circle class="vr-in" cx="300" cy="300" r="140" pathLength="100"/>
+      <circle class="vr-iri" cx="300" cy="300" r="190" pathLength="100"/>
+    </svg>
+    <div class="light__in light__in--r">
+      <p class="lbl mono">Vize</p>
+      <h2 class="blk blk--r rv" id="vzT"><span>Aby si lidé odnesli zážitek,</span><span>ne jen fotku do telefonu</span></h2>
+      <p class="sub sub--r rv">Každý projekt nejdřív postavíme v&nbsp;dílně ve skutečné velikosti. Až když funguje tam, stavíme ho u&nbsp;Vás.</p>
+    </div>
+  </section>
+
+  <section class="feats" id="sluzby" data-name="Služby" aria-labelledby="fT">
+    <h2 class="sr" id="fT">Služby</h2>
+    <article class="feat rv">
+      <div class="feat__media"><img src="img/fasada.webp" alt="Projekce na barokní fasádu, dav lidí na náměstí v noci" loading="lazy" width="1920" height="1072"></div>
+      <div class="feat__txt">
+        <p class="feat__brand mono">Pro města a festivaly</p>
+        <h3>Světlo pro města</h3>
+        <p>Projekce na fasády, svítící objekty na náměstí a advent, který lidi vytáhne ven. Navrhneme, postavíme, zapojíme a v zimě se o to postaráme.</p>
+        <p class="feat__note mono">Povolení, elektřinu i pojištění vyřizujeme s&nbsp;Vámi.</p>
+      </div>
+    </article>
+    <article class="feat feat--r rv">
+      <div class="feat__media"><img src="img/kroky.webp" alt="Děti běhají po svítící interaktivní podlaze v bílé galerii" loading="lazy" width="1920" height="1072"></div>
+      <div class="feat__txt">
+        <p class="feat__brand mono">Pro galerie a firmy</p>
+        <h3>Prostory, které reagují</h3>
+        <p>Podlahy, stěny a stoly, které poznají krok, dotek i hlas. Pro dětské části galerií, muzea, veletržní stánky a firemní akce.</p>
+        <p class="feat__note mono">Půjčíme i na jeden víkend, včetně obsluhy.</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="cta" id="kontakt" data-name="Kontakt" aria-labelledby="ctaT">
+    <div class="cta__bg" aria-hidden="true"><img src="img/sit.webp" alt="" loading="lazy" width="1920" height="1072"></div>
+    <div class="cta__frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="cta__in">
+      <h2 class="cta__big" id="ctaT">ozvěte se<svg class="spark" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 0 C53 38 62 47 100 50 C62 53 53 62 50 100 C47 62 38 53 0 50 C38 47 47 38 50 0Z"/></svg></h2>
+      <p class="cta__txt">Máte prostor, který má ožít? Pošlete nám pár fotek a&nbsp;rozměry. Do týdne se ozveme s&nbsp;nápadem a&nbsp;odhadem ceny.</p>
+      <button class="pill pill--big mono" type="button" id="write">Napsat do studia <span aria-hidden="true">↗</span></button>
+    </div>
   </section>
 </main>
 
-<footer class="ft mono">
-  <span>ODLESK · studio zážitků · Liberec</span>
-  <span>Ukázka · smyšlená značka · Vladislav Zachariev, <a href="https://whytelynx.cz" target="_blank" rel="noopener">Whyte Lynx</a></span>
+<footer class="ft">
+  <p class="ft__word" aria-hidden="true">ODLESK</p>
+  <div class="ft__row mono">
+    <nav class="ft__nav" aria-label="Patička">
+      <a href="#uvod">Úvod</a><a href="#projekty">Projekty</a><a href="#studio">Studio</a>
+      <a href="#vize">Vize</a><a href="#sluzby">Služby</a><a href="#kontakt">Kontakt</a>
+    </nav>
+    <div class="ft__right"><a href="#kontakt">Kontakt <span aria-hidden="true">↗</span></a><a href="#kontakt">Spolupráce <span aria-hidden="true">↗</span></a></div>
+  </div>
+  <p class="ft__by mono"><span>ODLESK · studio zážitků · Liberec · smyšlená značka</span><span>Ukázka webu — Vladislav Zachariev, <a href="https://whytelynx.cz" target="_blank" rel="noopener">Whyte Lynx</a></span></p>
 </footer>
+
+<div class="snd mono" id="snd" role="region" aria-label="Zvuk">
+  <p><span class="snd__tag">▲ zvuk</span>Tahle stránka umí zvuk. Zapnout?</p>
+  <div><button type="button" class="pill" id="sndOn">Zapnout zvuk</button><button type="button" class="snd__no" id="sndOff">Pokračovat bez zvuku</button></div>
+</div>
+<button class="sndt mono" id="sndT" type="button" aria-pressed="false">▲ zvuk <b>vyp</b></button>
+
+<nav class="menu" id="menu" aria-label="Menu" hidden>
+  <button class="menu__x mono" id="menuX" type="button">Zavřít ✕</button>
+  <ol>
+    <li><a href="#uvod"><span class="mono">01</span>Úvod</a></li>
+    <li><a href="#projekty"><span class="mono">02</span>Projekty</a></li>
+    <li><a href="#studio"><span class="mono">03</span>Studio</a></li>
+    <li><a href="#vize"><span class="mono">04</span>Vize</a></li>
+    <li><a href="#sluzby"><span class="mono">05</span>Služby</a></li>
+    <li><a href="#kontakt"><span class="mono">06</span>Kontakt</a></li>
+  </ol>
+  <p class="menu__by mono">Ukázka webu — Vladislav Zachariev, Whyte Lynx</p>
+</nav>
 
 <div class="toast mono" id="toast" role="status" aria-live="polite"></div>
 
 <script src="vendor/lenis.min.js"></script>
-<script src="main.js"></script>
+<script type="module" src="main.js"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5ae95e24cc924a0e84e28a82659ff3dc"}'></script>
 </body>
 </html>
