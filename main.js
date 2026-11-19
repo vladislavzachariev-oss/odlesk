@@ -13,7 +13,7 @@ const kf = (s, keys) => {
   }
   return keys[keys.length - 1][1];
 };
-const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduce = matchMedia('(min-width:100000px)').matches;
 const store = {
   get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private mode */ } },
